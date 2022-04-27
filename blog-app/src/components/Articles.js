@@ -8,6 +8,7 @@ import UserContext from "../context/userContext";
 function Articles(props) {
   let user = useContext(UserContext);
   let { isLoggedIn } = user.data;
+
   function getDate(date) {
     let newDate = new Date(date).toISOString().split("T")[0];
     return newDate;

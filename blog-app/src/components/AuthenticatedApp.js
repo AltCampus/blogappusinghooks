@@ -8,7 +8,6 @@ import Settings from "./Settings";
 import Profile from "./Profile";
 import UpdateArticle from "./UpdateArticle";
 import Home from "./Home";
-// import ErrorBoundary from "./ErrorBoundary";
 
 function AuthenticatedApp(props) {
   return (

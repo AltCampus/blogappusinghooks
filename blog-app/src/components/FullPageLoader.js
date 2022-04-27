@@ -1,6 +1,6 @@
 import "../style/fullPageLoader.css";
 
-function FullPageLoader(props) {
+function FullPageLoader() {
   return (
     <div className="containern h-screen bg-blue-400">
       <div className="loader">...</div>

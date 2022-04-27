@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Loader from "./Loader";
 import { profileURL } from "../utils/constant";
 import { articlesURL } from "../utils/constant";
@@ -7,28 +7,30 @@ import Pagination from "./Pagination";
 import { withRouter } from "react-router-dom";
 import UserContext from "../context/userContext";
 
-class Profile extends React.Component {
-  constructor(props) {
-    super();
-    this.state = {
-      user: "",
-      articles: null,
-      error: "",
-      articlesCount: null,
-      articlesPerPage: 10,
-      activePage: 1,
-      feedSelected: "author",
-      following: "",
-    };
-  }
+function Profile(props) {
+  let context = useContext(UserContext);
 
-  static contextType = UserContext;
-  componentDidMount() {
-    this.getUserInfo();
-  }
+  let [articles, setArticles] = useState(null);
+  let [error, setError] = useState("");
+  let [user, setUser] = useState("");
+  let [articlesCount, setArticlesCount] = useState(null);
+  let [articlesPerPage, setArticlesPerPage] = useState(10);
+  let [activePage, setActivePage] = useState(1);
+  let [feedSelected, setFeedSelected] = useState("author");
+  let [following, setFollowing] = useState("");
 
-  getUserInfo = () => {
-    let { id } = this.props.match.params;
+  useEffect(() => {
+    if (user) {
+      let { id } = props.match.params;
+      if (user.username !== id) {
+        getUserInfo();
+      }
+      getUserInfo();
+    }
+  });
+
+  const getUserInfo = () => {
+    let { id } = props.match.params;
     fetch(profileURL + id, {
       method: "GET",
       headers: {
@@ -45,18 +47,15 @@ class Profile extends React.Component {
         return res.json();
       })
       .then(({ profile }) => {
-        console.log({ profile });
-        this.setState(
-          { user: profile, following: profile.following },
-          this.getArticles
-        );
+        setUser(profile);
+        setFollowing(profile.following);
+        getArticles();
       })
-      .catch((err) => console.log(err));
+      .catch((err) => setError(err));
   };
 
-  handleFollow = () => {
-    let { username } = this.state.user;
-    let { following } = this.state;
+  const handleFollow = () => {
+    let { username } = user;
     let method = following ? "DELETE" : "POST";
     fetch(profileURL + "/" + username + "/follow", {
       method: method,
@@ -73,31 +72,23 @@ class Profile extends React.Component {
         return res.json();
       })
       .then(({ profile }) => {
-        console.log(profile);
-        this.setState({ following: profile.following });
+        setFollowing(profile.following);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => setError(err));
   };
 
-  componentDidUpdate() {
-    let user = this.state.user;
-    let { id } = this.props.match.params;
-    if (user.username !== id) {
-      this.getUserInfo();
-    }
-  }
-
-  handleClick = ({ target }) => {
+  const handleClick = ({ target }) => {
     let { id } = target.dataset;
-    this.setState({ activePage: id }, this.getArticles);
+    setActivePage(id);
+    getArticles();
   };
 
-  getArticles = () => {
-    let { username } = this.state.user;
-    let offset = (this.state.activePage - 1) * 10;
+  const getArticles = () => {
+    let { username } = user;
+    let offset = (activePage - 1) * 10;
 
     fetch(
-      `${articlesURL}?${this.state.feedSelected}=${username}&limit=${this.state.articlesPerPage}&offset=${offset}`,
+      `${articlesURL}?${feedSelected}=${username}&limit=${articlesPerPage}&offset=${offset}`,
       {
         method: "GET",
         headers: {
@@ -112,21 +103,17 @@ class Profile extends React.Component {
         return res.json();
       })
       .then((data) => {
-        this.setState({
-          articles: data.articles,
-          articlesCount: data.articlesCount,
-        });
+        setArticles(data.articles);
+        setArticlesCount(data.articlesCount);
       })
       .catch((err) => {
-        this.setState({ error: "Not able to fetch Articles" });
+        setError("Not able to fetch Articles");
       });
   };
 
-  handleFavorite = ({ target }) => {
+  const handleFavorite = ({ target }) => {
     let { id, slug } = target.dataset;
     let method = id === "false" ? "POST" : "DELETE";
-    console.log(method);
-    console.log(id, slug);
     fetch(articlesURL + "/" + slug + "/favorite", {
       method: method,
       headers: {
@@ -142,116 +129,97 @@ class Profile extends React.Component {
         return res.json();
       })
       .then((data) => {
-        this.getArticles();
+        getArticles();
       })
-      .catch((err) => console.log(err));
+      .catch((err) => setError(err));
   };
 
-  render() {
-    if (!this.state.user) {
-      return <Loader />;
-    }
-    let { username, image, bio } = this.state.user;
-    let loggenInUser = this.context.data.user.username;
-    let {
-      articles,
-      error,
-      articlesCount,
-      activePage,
-      articlesPerPage,
-      feedSelected,
-      following,
-    } = this.state;
-    return (
-      <main>
-        <section>
-          <div className="bg-articlePage text-white py-16 text-center">
-            <img
-              src={image}
-              alt={username}
-              className="w-40 h-40 rounded-full mx-auto"
-            />
-            <h2 className="text-2xl sm:text-3xl md:text-5xl my-4">
-              {username}
-            </h2>
-            <h3 className="sm:text-lg md:text-2xl text-pink-300">{bio}</h3>
-            <button
-              className={
-                loggenInUser !== username
-                  ? "bg-white text-gray-700 px-8 py-3 rounded-md mt-6"
-                  : "hidden"
-              }
-              onClick={this.handleFollow}
-            >
-              {following ? `Unfollow ${username}` : `Follow ${username}`}{" "}
-            </button>
-          </div>
-
-          <article className="px-8 sm:px-12 md:px-40">
-            <div className="py-12">
-              <span
-                className={
-                  "cursor-pointer text-md sm:text-xl" +
-                  (feedSelected === "author"
-                    ? " text-green-500 pb-2 border-b-2 border-green-500"
-                    : "")
-                }
-                onClick={() =>
-                  this.setState(
-                    {
-                      feedSelected: "author",
-                      activePage: 1,
-                    },
-                    this.getArticles
-                  )
-                }
-              >
-                <i className="fas fa-newspaper mr-2"></i>
-                My Articles
-              </span>
-              <span className="mx-4">/</span>
-              <span
-                className={
-                  "cursor-pointer text-md sm:text-xl" +
-                  (feedSelected === "favorited"
-                    ? " text-green-500 pb-2 border-b-2 border-green-500"
-                    : "")
-                }
-                onClick={() =>
-                  this.setState(
-                    {
-                      feedSelected: "favorited",
-                      activePage: 1,
-                    },
-                    this.getArticles
-                  )
-                }
-              >
-                <i className="fas fa-newspaper mr-2"></i>
-                Favorited
-              </span>
-            </div>
-            <div className="">
-              <Articles
-                articles={articles}
-                error={error}
-                isLoggedIn={this.context.isLoggedIn}
-                handleFavorite={this.handleFavorite}
-              />
-            </div>
-          </article>
-          <div className="text-center py-8">
-            <Pagination
-              articlesCount={articlesCount}
-              articlesPerPage={articlesPerPage}
-              activePage={activePage}
-              handleClick={this.handleClick}
-            />
-          </div>
-        </section>
-      </main>
-    );
+  if (!user) {
+    return <Loader />;
   }
+
+  let { username, image, bio } = user;
+  let loggenInUser = context.data.user.username;
+
+  return (
+    <main>
+      <section>
+        <div className="bg-articlePage text-white py-16 text-center">
+          <img
+            src={image}
+            alt={username}
+            className="w-40 h-40 rounded-full mx-auto"
+          />
+          <h2 className="text-2xl sm:text-3xl md:text-5xl my-4">{username}</h2>
+          <h3 className="sm:text-lg md:text-2xl text-pink-300">{bio}</h3>
+          <button
+            className={
+              loggenInUser !== username
+                ? "bg-white text-gray-700 px-8 py-3 rounded-md mt-6"
+                : "hidden"
+            }
+            onClick={handleFollow}
+          >
+            {following ? `Unfollow ${username}` : `Follow ${username}`}{" "}
+          </button>
+        </div>
+
+        <article className="px-8 sm:px-12 md:px-40">
+          <div className="py-12">
+            <span
+              className={
+                "cursor-pointer text-md sm:text-xl" +
+                (feedSelected === "author"
+                  ? " text-green-500 pb-2 border-b-2 border-green-500"
+                  : "")
+              }
+              onClick={() => {
+                setFeedSelected("author");
+                setActivePage(1);
+                getArticles();
+              }}
+            >
+              <i className="fas fa-newspaper mr-2"></i>
+              My Articles
+            </span>
+            <span className="mx-4">/</span>
+            <span
+              className={
+                "cursor-pointer text-md sm:text-xl" +
+                (feedSelected === "favorited"
+                  ? " text-green-500 pb-2 border-b-2 border-green-500"
+                  : "")
+              }
+              onClick={() => {
+                setFeedSelected("favorited");
+                setActivePage(1);
+                getArticles();
+              }}
+            >
+              <i className="fas fa-newspaper mr-2"></i>
+              Favorited
+            </span>
+          </div>
+          <div className="">
+            <Articles
+              articles={articles}
+              error={error}
+              isLoggedIn={context.isLoggedIn}
+              handleFavorite={handleFavorite}
+            />
+          </div>
+        </article>
+        <div className="text-center py-8">
+          <Pagination
+            articlesCount={articlesCount}
+            articlesPerPage={articlesPerPage}
+            activePage={activePage}
+            handleClick={handleClick}
+          />
+        </div>
+      </section>
+    </main>
+  );
 }
 
 export default withRouter(Profile);

@@ -1,39 +1,55 @@
-import React from "react";
+import React, { useState } from "react";
 import { articlesURL } from "../utils/constant";
 import { withRouter } from "react-router";
 import validate from "../utils/validate";
 
-class NewPost extends React.Component {
-  state = {
+function NewPost(props) {
+  let [title, setTitle] = useState("");
+  let [description, setDescription] = useState("");
+  let [body, setBody] = useState("");
+  let [tagList, setTagList] = useState("");
+  let [errors, setErrors] = useState({
     title: "",
     description: "",
     body: "",
     tagList: "",
-    errors: {
-      title: "",
-      description: "",
-      body: "",
-      tagList: "",
-    },
-  };
+  });
 
-  handleInput = ({ target }) => {
+  const handleTitle = ({ target }) => {
     let { name, value } = target;
-    let errors = { ...this.state.errors };
-
     validate(errors, name, value);
-
-    this.setState({ errors, [name]: value });
+    setTitle(value);
+    setErrors(errors);
   };
 
-  handleSubmit = (event) => {
+  const handleDescription = ({ target }) => {
+    let { name, value } = target;
+    validate(errors, name, value);
+    setDescription(value);
+    setErrors(errors);
+  };
+
+  const handleBody = ({ target }) => {
+    let { name, value } = target;
+    validate(errors, name, value);
+    setBody(value);
+    setErrors(errors);
+  };
+
+  const handleTagList = ({ target }) => {
+    let { name, value } = target;
+    validate(errors, name, value);
+    setTagList(value);
+    setErrors(errors);
+  };
+
+  const handleSubmit = (event) => {
     event.preventDefault();
-    const { title, description, body, tagList } = this.state;
     fetch(articlesURL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        authorization: `Token ${this.props.user.token}`,
+        authorization: `Token ${props.user.token}`,
       },
       body: JSON.stringify({
         article: {
@@ -51,58 +67,58 @@ class NewPost extends React.Component {
         return res.json();
       })
       .then(({ article }) => {
-        this.setState({ title: "", description: "", body: "", tagList: "" });
-        this.props.history.push("/");
+        setBody("");
+        setDescription("");
+        setTagList("");
+        setTitle("");
+        props.history.push("/");
       })
-      .catch((errors) => this.setState({ errors }));
+      .catch((errors) => setErrors(errors));
   };
 
-  render() {
-    let { errors, title, description, body, tagList } = this.state;
-    return (
-      <form className="post" onSubmit={this.handleSubmit}>
-        <input
-          type="text"
-          name="title"
-          value={title}
-          onChange={this.handleInput}
-          placeholder="Article Title"
-          className={errors.title && "error"}
-        />
-        <span className="error">{errors.title}</span>
-        <input
-          type="text"
-          name="description"
-          value={description}
-          onChange={this.handleInput}
-          placeholder="What's this article about?"
-          className={errors.description && "error"}
-        />
-        <span className="error">{errors.about}</span>
-        <textarea
-          name="body"
-          rows="5"
-          value={body}
-          onChange={this.handleInput}
-          placeholder="Write your article (in markdown)"
-          className={errors.body && "error"}
-        />
-        <span className="error">{errors.body}</span>
-        <input
-          type="text"
-          name="tagList"
-          value={tagList}
-          onChange={this.handleInput}
-          placeholder="Enter TagList"
-          className={errors.tagList && "error"}
-        />
-        <span className="error">{errors.tagList}</span>
-        <button onClick={this.handleSubmit} className="submit" type="submit">
-          Publish Article
-        </button>
-      </form>
-    );
-  }
+  return (
+    <form className="post" onSubmit={handleSubmit}>
+      <input
+        type="text"
+        name="title"
+        value={title}
+        onChange={handleTitle}
+        placeholder="Article Title"
+        className={errors.title && "error"}
+      />
+      <span className="error">{errors.title}</span>
+      <input
+        type="text"
+        name="description"
+        value={description}
+        onChange={handleDescription}
+        placeholder="What's this article about?"
+        className={errors.description && "error"}
+      />
+      <span className="error">{errors.about}</span>
+      <textarea
+        name="body"
+        rows="5"
+        value={body}
+        onChange={handleBody}
+        placeholder="Write your article (in markdown)"
+        className={errors.body && "error"}
+      />
+      <span className="error">{errors.body}</span>
+      <input
+        type="text"
+        name="tagList"
+        value={tagList}
+        onChange={handleTagList}
+        placeholder="Enter TagList"
+        className={errors.tagList && "error"}
+      />
+      <span className="error">{errors.tagList}</span>
+      <button onClick={handleSubmit} className="submit" type="submit">
+        Publish Article
+      </button>
+    </form>
+  );
 }
 
 export default withRouter(NewPost);

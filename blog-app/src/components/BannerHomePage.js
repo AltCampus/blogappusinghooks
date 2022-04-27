@@ -1,4 +1,4 @@
-function BannerHomePage(props) {
+function BannerHomePage() {
   return (
     <div className="bg-green-500 py-12 text-white">
       <h2 className="text-center py-6 text-3xl sm:text-5xl font-bold">

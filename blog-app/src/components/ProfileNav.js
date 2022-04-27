@@ -1,15 +1,14 @@
 import Articles from "./Articles";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { articlesURL } from "../utils/constant";
 
-class ProfileNav extends React.Component {
-  state = {
-    activeTab: "author",
-    articles: [],
-  };
+function ProfileNav(props) {
+  let [activeTab, setActiveTab] = useState("author");
+  let [articles, setArticles] = useState([]);
+  let [error, setError] = useState("");
 
-  fetchData = () => {
-    fetch(articlesURL + `/?${this.state.activeTab}=${this.props.user.username}`)
+  const fetchData = () => {
+    fetch(articlesURL + `/?${activeTab}=${props.user.username}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Cannot fetch data for specified user");
@@ -18,50 +17,44 @@ class ProfileNav extends React.Component {
         }
       })
       .then((data) => {
-        this.setState({
-          articles: data.articles,
-        });
+        setArticles(data.articles);
       })
       .catch((err) => {
-        this.setState({ error: "Not able to fetch articles!" });
+        setError("Not able to fetch articles!");
       });
   };
 
-  componentDidMount() {
-    this.fetchData();
-  }
+  useEffect(() => {
+    fetchData();
+  });
 
-  handleActive = (tab) => {
-    this.setState({ activeTab: tab }, () => {
-      this.fetchData();
-    });
+  const handleActive = (tab) => {
+    setActiveTab(tab);
+    fetchData();
   };
 
-  render() {
-    const { activeTab } = this.state;
-    return (
-      <div className="container">
-        <div className="article-heading">
-          <div className="flex">
-            <button
-              onClick={() => this.handleActive("author")}
-              className={activeTab === "author" && "active"}
-            >
-              My Articles
-            </button>
-            <button
-              onClick={() => this.handleActive("favourited")}
-              className={activeTab === "favourited" && "active"}
-            >
-              Favourite Articles
-            </button>
-          </div>
-          <hr />
-          <Articles articles={this.state.articles} />
+  return (
+    <div className="container">
+      <div className="article-heading">
+        <div className="flex">
+          <button
+            onClick={() => handleActive("author")}
+            className={activeTab === "author" && "active"}
+          >
+            My Articles
+          </button>
+          <button
+            onClick={() => handleActive("favourited")}
+            className={activeTab === "favourited" && "active"}
+          >
+            Favourite Articles
+          </button>
         </div>
+        <hr />
+        <Articles articles={articles} />
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default ProfileNav;

@@ -1,26 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import { articlesURL } from "../utils/constant";
 import { withRouter } from "react-router-dom";
 
-class NewArticle extends React.Component {
-  constructor(props) {
-    super();
-    this.state = {
-      title: "",
-      description: "",
-      body: "",
-      tags: "",
-      error: "",
-    };
-  }
+function NewArticle(props) {
+  let [title, setTitle] = useState("");
+  let [description, setDescription] = useState("");
+  let [body, setBody] = useState("");
+  let [tags, setTags] = useState("");
+  let [error, setError] = useState("");
 
-  handleChange = ({ target }) => {
+  const handleTitle = ({ target }) => {
     let { name, value } = target;
-    this.setState({ [name]: value });
+    setTitle(value);
   };
 
-  handleSubmit = (event) => {
-    let { title, description, body, tags } = this.state;
+  const handleDescription = ({ target }) => {
+    let { name, value } = target;
+    setDescription(value);
+  };
+
+  const handleBody = ({ target }) => {
+    let { name, value } = target;
+    setBody(value);
+  };
+
+  const handleTags = ({ target }) => {
+    let { name, value } = target;
+    setTags(value);
+  };
+
+  const handleSubmit = (event) => {
     let token = "Bearer " + localStorage.token;
     event.preventDefault();
     if (title && description && body && tags) {
@@ -48,91 +57,83 @@ class NewArticle extends React.Component {
           return res.json();
         })
         .then((data) => {
-          this.props.history.push("/articles");
+          props.history.push("/articles");
         })
         .catch((err) => {
-          console.log(err);
-          this.setState({
-            title: "",
-            description: "",
-            body: "",
-            tags: "",
-            error: "",
-          });
+          setBody("");
+          setDescription("");
+          setError(err);
+          setTags("");
+          setTitle("");
         });
     } else {
-      this.setState({
-        title: "",
-        description: "",
-        body: "",
-        tags: "",
-        error: "Enter all fields",
-      });
+      setBody("");
+      setDescription("");
+      setError("Enter all fields");
+      setTags("");
+      setTitle("");
     }
   };
 
-  render() {
-    let { title, description, body, tags, error } = this.state;
-    return (
-      <main>
-        <section className="pt-20 px-8">
-          <form
-            className="w-full md:w-1/2 md:mx-auto p-8 border border-gray-400 rounded-md"
-            onSubmit={this.handleSubmit}
-          >
-            <legend className="text-2xl sm:text-3xl text-center font-bold my-3">
-              Add Article
-            </legend>
-            <fieldset className="">
-              <span className="text-red-500 my-1">{error}</span>
+  return (
+    <main>
+      <section className="pt-20 px-8">
+        <form
+          className="w-full md:w-1/2 md:mx-auto p-8 border border-gray-400 rounded-md"
+          onSubmit={handleSubmit}
+        >
+          <legend className="text-2xl sm:text-3xl text-center font-bold my-3">
+            Add Article
+          </legend>
+          <fieldset className="">
+            <span className="text-red-500 my-1">{error}</span>
 
-              <input
-                type="text"
-                value={title}
-                placeholder="Title"
-                name="title"
-                onChange={this.handleChange}
-                className="my-2 p-2 rounded-md outline-none border-2 border-gray-300 focus:border-blue-500 w-full"
-              />
+            <input
+              type="text"
+              value={title}
+              placeholder="Title"
+              name="title"
+              onChange={handleTitle}
+              className="my-2 p-2 rounded-md outline-none border-2 border-gray-300 focus:border-blue-500 w-full"
+            />
 
-              <input
-                type="text"
-                value={description}
-                name="description"
-                placeholder="Description"
-                onChange={this.handleChange}
-                className="my-2 p-2 rounded-md outline-none border-2 border-gray-300 focus:border-blue-500 w-full"
-              />
+            <input
+              type="text"
+              value={description}
+              name="description"
+              placeholder="Description"
+              onChange={handleDescription}
+              className="my-2 p-2 rounded-md outline-none border-2 border-gray-300 focus:border-blue-500 w-full"
+            />
 
-              <textarea
-                rows="6"
-                value={body}
-                name="body"
-                placeholder="Articles's Body"
-                onChange={this.handleChange}
-                className="my-2 p-2 rounded-md outline-none border-2 border-gray-300 focus:border-blue-500 w-full"
-              ></textarea>
+            <textarea
+              rows="6"
+              value={body}
+              name="body"
+              placeholder="Articles's Body"
+              onChange={handleBody}
+              className="my-2 p-2 rounded-md outline-none border-2 border-gray-300 focus:border-blue-500 w-full"
+            ></textarea>
 
-              <input
-                type="text"
-                value={tags}
-                name="tags"
-                placeholder="Tag List(comma seperated)"
-                onChange={this.handleChange}
-                className="my-2 p-2 rounded-md outline-none border-2 border-gray-300 focus:border-blue-500 w-full"
-              />
+            <input
+              type="text"
+              value={tags}
+              name="tags"
+              placeholder="Tag List(comma seperated)"
+              onChange={handleTags}
+              className="my-2 p-2 rounded-md outline-none border-2 border-gray-300 focus:border-blue-500 w-full"
+            />
 
-              <input
-                type="submit"
-                value="Add Article"
-                className="my-2 p-2 rounded-md outline-none bg-blue-500 hover:bg-blue-400 text-white w-full"
-              />
-            </fieldset>
-          </form>
-        </section>
-      </main>
-    );
-  }
+            <input
+              type="submit"
+              value="Add Article"
+              className="my-2 p-2 rounded-md outline-none bg-blue-500 hover:bg-blue-400 text-white w-full"
+            />
+          </fieldset>
+        </form>
+      </section>
+    </main>
+  );
 }
 
 export default withRouter(NewArticle);

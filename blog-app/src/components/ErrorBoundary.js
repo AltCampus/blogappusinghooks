@@ -1,5 +1,6 @@
 import React from "react";
 import { withRouter } from "react-router-dom";
+
 class ErrorBoundary extends React.Component {
   state = {
     hasError: false,
@@ -20,7 +21,6 @@ class ErrorBoundary extends React.Component {
 
   render() {
     let { hasError, errorInfo } = this.state;
-    console.log(errorInfo);
     if (hasError) {
       return (
         <div className="text-center pt-8">
