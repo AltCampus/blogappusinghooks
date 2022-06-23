@@ -1,9 +1,9 @@
 import { Route, Switch } from "react-router-dom";
 import Main from "./Main";
-import Signup from "./Signup";
+import Signup from "./SignUp";
 import Signin from "./Signin";
 import Article from "./Article";
-import Nomatch from "./Nomatch";
+import Nomatch from "./NoMatch";
 import React from "react";
 import Home from "./Home";
 // import ErrorBoundary from "./ErrorBoundary";

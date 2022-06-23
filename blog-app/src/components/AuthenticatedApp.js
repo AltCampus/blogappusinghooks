@@ -1,7 +1,7 @@
 import { Route, Switch } from "react-router-dom";
 import Main from "./Main";
 import Article from "./Article";
-import Nomatch from "./Nomatch";
+import Nomatch from "./NoMatch";
 import React from "react";
 import NewArticle from "./NewArticle";
 import Settings from "./Settings";
